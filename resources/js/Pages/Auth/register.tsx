@@ -1,0 +1,317 @@
+import { Head, useForm } from '@inertiajs/react';
+import { LoaderCircle, User, AtSign, Key, Heart, Pill, Stethoscope, ClipboardList, Bookmark, Archive, Package, DollarSign, Users, CheckCircle2, BarChart4, Bell, ShieldCheck } from 'lucide-react';
+import { FormEventHandler, useEffect, useState, useRef } from 'react';
+import { motion, AnimatePresence, useAnimation } from 'framer-motion';
+import InputError from '@/components/input-error';
+import TextLink from '@/components/text-link';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
+import { Spotlight } from '@/components/ui/spotlight';
+import { CardSpotlight } from '@/components/ui/card-spotlight';
+
+type RegisterForm = {
+    name: string;
+    email: string;
+    password: string;
+    password_confirmation: string;
+};
+
+// Feature showcase with animation
+const FeatureShowcase = () => {
+    const features = [
+        {
+            icon: Package,
+            title: "Smart Inventory",
+            description: "Pantau stok secara real-time dengan sistem prediksi kebutuhan obat",
+            color: "from-emerald-500 to-green-400",
+            highlight: "Hemat 40% waktu pengelolaan stok"
+        },
+        {
+            icon: DollarSign,
+            title: "Express Checkout",
+            description: "Proses transaksi dalam hitungan detik dengan scanner terintegrasi",
+            color: "from-cyan-500 to-blue-400",
+            highlight: "Tingkatkan kepuasan pelanggan"
+        },
+        {
+            icon: BarChart4,
+            title: "Business Intelligence",
+            description: "Analisis tren penjualan dan prediksi pendapatan dengan AI",
+            color: "from-purple-500 to-indigo-400",
+            highlight: "Visualisasi data interaktif"
+        },
+        {
+            icon: Bell,
+            title: "Smart Alerts",
+            description: "Notifikasi cerdas untuk stok kritis dan obat mendekati kadaluarsa",
+            color: "from-amber-500 to-orange-400",
+            highlight: "Kurangi kerugian hingga 25%"
+        },
+        {
+            icon: Users,
+            title: "Customer Management",
+            description: "Kelola data pelanggan dan riwayat pembelian untuk layanan personal",
+            color: "from-pink-500 to-rose-400",
+            highlight: "Tingkatkan loyalitas pelanggan"
+        }
+    ];
+
+    const [currentFeature, setCurrentFeature] = useState(0);
+
+    useEffect(() => {
+        // Atur interval untuk rotasi fitur tanpa animasi yang kompleks
+        const interval = setInterval(() => {
+            setCurrentFeature((prev) => (prev + 1) % features.length);
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    const feature = features[currentFeature];
+    const Icon = feature.icon;
+
+    return (
+        <div className="h-[220px] flex items-center justify-center bg-emerald-900/30 rounded-lg border border-emerald-500/20 w-full">
+            <motion.div
+                key={currentFeature}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                className="text-center p-4 w-full"
+            >
+                <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br border border-white/10 shadow-lg flex items-center justify-center mb-4 p-3 bg-opacity-20 backdrop-blur-sm"
+                    style={{ backgroundImage: `linear-gradient(to bottom right, ${feature.color.split(' ')[0].replace('from-', '')}, ${feature.color.split(' ')[1].replace('to-', '')})` }}>
+                    <Icon className="h-10 w-10 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">{feature.title}</h3>
+                <p className="text-gray-300 text-sm max-w-xs mx-auto">{feature.description}</p>
+
+                <div className="mt-3 bg-white/10 backdrop-blur-sm px-4 py-1.5 rounded-full inline-block border border-white/5">
+                    <p className="text-xs font-medium text-emerald-300">{feature.highlight}</p>
+                </div>
+
+                <div className="flex justify-center mt-6 space-x-1">
+                    {features.map((_, idx) => (
+                        <div
+                            key={idx}
+                            className={`w-2 h-2 rounded-full ${idx === currentFeature ? 'bg-emerald-400' : 'bg-white/20'}`}
+                        />
+                    ))}
+                </div>
+            </motion.div>
+        </div>
+    );
+};
+
+export default function Register() {
+    const { data, setData, post, processing, errors, reset } = useForm<Required<RegisterForm>>({
+        name: '',
+        email: '',
+        password: '',
+        password_confirmation: '',
+    });
+
+    const submit: FormEventHandler = (e) => {
+        e.preventDefault();
+        post(route('register'), {
+            onFinish: () => reset('password', 'password_confirmation'),
+        });
+    };
+
+    return (
+        <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-emerald-950 to-black relative overflow-hidden">
+            <Head title="Register" />
+
+            {/* Background grid pattern */}
+            <div
+                className={cn(
+                    "pointer-events-none absolute inset-0 [background-size:40px_40px] select-none",
+                    "[background-image:linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.05)_1px,transparent_1px)]",
+                )}
+            />
+
+            {/* Light effect elements */}
+            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px] -z-10"></div>
+            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-green-500/10 rounded-full blur-[100px] -z-10"></div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-teal-500/5 rounded-full blur-[80px] -z-10"></div>
+
+            {/* Spotlight effect */}
+            <Spotlight
+                className="-top-40 left-0 md:-top-20 md:left-60"
+                fill="#10b981"
+            />
+
+            {/* Glass card container */}
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                className="w-full max-w-5xl relative z-10"
+            >
+                <CardSpotlight className="flex flex-col md:flex-row overflow-hidden rounded-[20px] h-full w-full">
+                    {/* Card spotlight effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 via-transparent to-emerald-500/5"></div>
+
+                    {/* Register side */}
+                    <div className="p-8 relative w-full md:w-1/2">
+                        <div className="absolute inset-0 pointer-events-none border-r border-emerald-500/10 md:block hidden"></div>
+                    {/* Logo and title */}
+                    <motion.div
+                        className="flex justify-center mb-6 relative z-10"
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                    >
+                        <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center border border-gray-200 shadow-lg">
+                            <img src="/assets/images/logo.png" alt="PharmaSys Logo" className="h-20 w-20 object-contain" />
+                        </div>
+                    </motion.div>
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.3 }}
+                        className="relative z-10"
+                    >
+                        <h2 className="text-3xl font-bold text-center bg-gradient-to-b from-white to-emerald-200 bg-clip-text text-transparent mb-2">PharmaSys</h2>
+                        <p className="text-center text-gray-300 mb-6">Bergabunglah dengan Sistem Apotek Modern</p>
+                    </motion.div>
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.4 }}
+                        className="relative z-10"
+                    >
+                        <form onSubmit={submit} className="space-y-5">
+                        <div className="space-y-4">
+                            <div>
+                                <Label htmlFor="name" className="mb-1 block text-sm font-medium text-gray-200">
+                                    Full Name
+                                </Label>
+                                <Input
+                                    id="name"
+                                    type="text"
+                                    name="name"
+                                    value={data.name}
+                                    onChange={(e) => setData('name', e.target.value)}
+                                    required
+                                    autoFocus
+                                    autoComplete="name"
+                                    tabIndex={1}
+                                    placeholder="Masukkan nama lengkap"
+                                    className="block w-full rounded-md border border-emerald-500/20 bg-black/30 py-2 px-4 text-sm text-white placeholder:text-gray-400 focus:border-emerald-500 focus:ring focus:ring-emerald-500 focus:ring-opacity-50 transition-all duration-200"
+                                />
+                                <InputError message={errors.name} className="mt-1" />
+                            </div>
+
+                            <div>
+                                <Label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-200">
+                                    Email Address
+                                </Label>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    name="email"
+                                    value={data.email}
+                                    onChange={(e) => setData('email', e.target.value)}
+                                    required
+                                    autoComplete="email"
+                                    tabIndex={2}
+                                    placeholder="email@example.com"
+                                    className="block w-full rounded-md border border-emerald-500/20 bg-black/30 py-2 px-4 text-sm text-white placeholder:text-gray-400 focus:border-emerald-500 focus:ring focus:ring-emerald-500 focus:ring-opacity-50 transition-all duration-200"
+                                />
+                                <InputError message={errors.email} className="mt-1" />
+                            </div>
+
+                            <div>
+                                <Label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-200">
+                                    Password
+                                </Label>
+                                <Input
+                                    id="password"
+                                    type="password"
+                                    name="password"
+                                    value={data.password}
+                                    onChange={(e) => setData('password', e.target.value)}
+                                    required
+                                    autoComplete="new-password"
+                                    tabIndex={3}
+                                    placeholder="Minimal 8 karakter"
+                                    className="block w-full rounded-md border border-emerald-500/20 bg-black/30 py-2 px-4 text-sm text-white placeholder:text-gray-400 focus:border-emerald-500 focus:ring focus:ring-emerald-500 focus:ring-opacity-50 transition-all duration-200"
+                                />
+                                <InputError message={errors.password} className="mt-1" />
+                            </div>
+
+                            <div>
+                                <Label htmlFor="password_confirmation" className="mb-1 block text-sm font-medium text-gray-200">
+                                    Confirm Password
+                                </Label>
+                                <Input
+                                    id="password_confirmation"
+                                    type="password"
+                                    name="password_confirmation"
+                                    value={data.password_confirmation}
+                                    onChange={(e) => setData('password_confirmation', e.target.value)}
+                                    required
+                                    autoComplete="new-password"
+                                    tabIndex={4}
+                                    placeholder="Ulangi password"
+                                    className="block w-full rounded-md border border-emerald-500/20 bg-black/30 py-2 px-4 text-sm text-white placeholder:text-gray-400 focus:border-emerald-500 focus:ring focus:ring-emerald-500 focus:ring-opacity-50 transition-all duration-200"
+                                />
+                                <InputError message={errors.password_confirmation} className="mt-1" />
+                            </div>
+
+                            <Button
+                                type="submit"
+                                className={cn(
+                                    "mt-4 w-full transform rounded-md bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white shadow-md",
+                                    "transition-all duration-300 ease-out hover:bg-emerald-400 active:scale-95 disabled:opacity-50",
+                                    "relative overflow-hidden group"
+                                )}
+                                tabIndex={5}
+                                disabled={processing}
+                            >
+                                <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-emerald-400 to-green-500 opacity-0 group-hover:opacity-100 transition-all duration-300"></span>
+                                <span className="absolute inset-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuIiB4PSIwIiB5PSIwIiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHBhdHRlcm5UcmFuc2Zvcm09InJvdGF0ZSg0NSkiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSI2IiBoZWlnaHQ9IjYiIGZpbGw9IiNmZmZmZmYxMCIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNwYXR0ZXJuKSIgb3BhY2l0eT0iMC4xIi8+PC9zdmc+')]  opacity-0 group-hover:opacity-100 transition-all duration-300"></span>
+                                <span className="relative flex items-center justify-center">
+                                    {processing && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                                    Create Account
+                                </span>
+                            </Button>
+                        </div>
+
+                        <div className="mt-4 text-center text-sm text-gray-300">
+                            Already have an account?{' '}
+                            <TextLink
+                                href={route('login')}
+                                tabIndex={6}
+                                className="font-medium text-emerald-300 transition duration-150 ease-in-out hover:text-emerald-200"
+                            >
+                                Log in
+                            </TextLink>
+                        </div>
+
+                        </form>
+                    </motion.div>
+                    </div>
+
+                    {/* Features side */}
+                    <div className="p-8 relative bg-gradient-to-br from-emerald-950/50 to-black/50 w-full md:w-1/2 flex flex-col">
+
+                        <div className="text-center mt-2 mb-6">
+                            <h4 className="text-lg font-medium text-emerald-300 mb-1">Bergabung Sekarang</h4>
+                            <p className="text-gray-300 text-sm">Daftarkan akun Anda dan mulai kelola apotek dengan sistem terintegrasi</p>
+                        </div>
+
+                        <div className="flex-1 flex flex-col justify-center items-center relative z-20 w-full">
+                            <FeatureShowcase />
+                        </div>
+                    </div>
+                </CardSpotlight>
+            </motion.div>
+        </div>
+    );
+}

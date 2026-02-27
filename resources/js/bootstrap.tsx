@@ -1,0 +1,133 @@
+// Bootstrap file for initializing global components and configurations
+
+import axios from 'axios';
+
+// Configure axios for API calls
+window.axios = axios;
+window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+window.axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+window.axios.defaults.withCredentials = true;
+
+// Performance optimizations
+// Detect connection speed
+function detectConnectionSpeed() {
+    const connection = (navigator as any).connection || 
+                      (navigator as any).mozConnection || 
+                      (navigator as any).webkitConnection;
+    
+    if (connection) {
+        // Save to localStorage for use throughout the app
+        localStorage.setItem('connectionType', connection.effectiveType);
+        localStorage.setItem('connectionSpeed', connection.downlink + 'Mbps');
+        
+        // Add change listener
+        connection.addEventListener('change', () => {
+            localStorage.setItem('connectionType', connection.effectiveType);
+            localStorage.setItem('connectionSpeed', connection.downlink + 'Mbps');
+        });
+    }
+}
+
+// Detect device capability
+function detectDeviceCapability() {
+    // Check memory if available
+    if ((navigator as any).deviceMemory) {
+        localStorage.setItem('deviceMemory', (navigator as any).deviceMemory + 'GB');
+    }
+    
+    // Check hardware concurrency (CPU cores)
+    if (navigator.hardwareConcurrency) {
+        localStorage.setItem('cpuCores', navigator.hardwareConcurrency.toString());
+    }
+}
+
+// Initialize performance measurements
+function initPerformance() {
+    if (window.performance) {
+        // Add listener for important page metrics
+        const observer = new PerformanceObserver((list) => {
+            for (const entry of list.getEntries()) {
+                // Log important metrics 
+                if (entry.entryType === 'navigation') {
+                    const navigationEntry = entry as PerformanceNavigationTiming;
+                    console.log('Page load time:', navigationEntry.loadEventEnd - navigationEntry.startTime);
+                }
+            }
+        });
+        
+        observer.observe({ entryTypes: ['navigation', 'resource'] });
+    }
+}
+
+// Run optimizations
+function initOptimizations() {
+    detectConnectionSpeed();
+    detectDeviceCapability();
+    initPerformance();
+    
+    // Add theme change listener to save theme preferences
+    const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    darkModeMediaQuery.addEventListener('change', (e) => {
+        const theme = e.matches ? 'dark' : 'light';
+        
+        // Only set if user hasn't manually chosen a theme
+        if (!localStorage.getItem('vite-ui-theme')) {
+            document.documentElement.classList.toggle('dark', e.matches);
+        }
+    });
+    
+    // Initialize IntersectionObserver for lazy loading components
+    window.lazyLoadObserver = new IntersectionObserver(
+        (entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const lazyElement = entry.target as HTMLElement;
+                    if (lazyElement.dataset.src) {
+                        lazyElement.setAttribute('src', lazyElement.dataset.src);
+                        delete lazyElement.dataset.src;
+                    }
+                    observer.unobserve(lazyElement);
+                }
+            });
+        },
+        { rootMargin: '200px' }
+    );
+}
+
+// Handle keyboard shortcuts
+function setupKeyboardShortcuts() {
+    document.addEventListener('keydown', (e) => {
+        // Cegah semua aksi default untuk Ctrl+N
+        if (e.ctrlKey && e.key.toLowerCase() === 'n') {
+            e.preventDefault();
+            
+            // Tambahkan logika tambahan jika perlu
+            console.log('Ctrl+N diblokir. Gunakan Ctrl+Shift+N untuk membuka kasir');
+            return;
+        }
+
+        // Ctrl+Shift+N - Buka menu kasir
+        if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'n') {
+            e.preventDefault();
+            // Gunakan window.location untuk navigasi
+            const baseUrl = window.location.origin;
+            window.location.href = `${baseUrl}/sales/create`;
+        }
+    });
+}
+
+// Call on app boot
+document.addEventListener('DOMContentLoaded', () => {
+    initOptimizations();
+    setupKeyboardShortcuts();
+});
+
+// Add global declarations
+declare global {
+    interface Window {
+        lazyLoadObserver: IntersectionObserver;
+        axios: typeof axios;
+    }
+}
+
+export {};
