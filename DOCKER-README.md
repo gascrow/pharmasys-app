@@ -1,146 +1,120 @@
 # PharmaSys Docker Setup
 
-Panduan cara menjalankan aplikasi PharmaSys menggunakan Docker.
+Panduan cara menjalankan aplikasi PharmaSys menggunakan Docker. Pastikan semua langkah dilakukan berurutan.
 
 ## Prerequisites
 
-Pastikan komputer client sudah terinstall:
-- [Docker](https://www.docker.com/products/docker-desktop) (v20.10+)
-- [Docker Compose](https://docs.docker.com/compose/install/) (v2.0+)
+Pastikan komputer sudah terinstall:
+
+* [Docker Desktop](https://www.docker.com/products/docker-desktop)
+* Node.js & NPM (untuk compile assets di Mac/Host)
 
 ## Cara Menjalankan
 
-### 1. Clone/Copy Project ke Laptop Client
+### 1. Setup Environment
 
-Copy semua file project ke laptop, pastikan ada file-file berikut:
-- `Dockerfile`
-- `docker-compose.yml`
-- `nginx.conf`
-- `supervisord.conf`
-- `.env.docker`
-
-### 2. Setup Environment
-
-Copy file `.env.docker` menjadi `.env`, dan pastikan variabel berikut sudah diatur untuk PostgreSQL:
-
-```bash
-DB_CONNECTION=pgsql
-DB_HOST=database
-DB_PORT=5432
-DB_DATABASE=nama_database
-DB_USERNAME=nama_user
-DB_PASSWORD=password_anda
-```
+Copy file `.env.docker` menjadi `.env`.
 
 ```bash
 cp .env.docker .env
+
 ```
 
-### 3. Build dan Jalankan Docker
+*Pastikan konfigurasi database di `.env` menggunakan host `database` (nama service docker).*
+
+### 2. Build dan Jalankan Container
+
+Jalankan perintah ini untuk membangun image dan menyalakan semua service (Nginx, PHP, PostgreSQL).
 
 ```bash
-# Build dan jalankan container
-docker-compose up -d --build
+docker compose up -d --build
+
 ```
 
-Tunggu hingga build selesai (pertama kali bisa memakan waktu 5-10 menit).
+### 3. Install Dependencies (Wajib)
 
-### 4. Setup Database
-
-Masuk ke container PHP dan jalankan migration:
+Karena menggunakan volume mapping, folder `vendor` harus diisi melalui container agar Laravel bisa berjalan.
 
 ```bash
-# Masuk ke container
-docker-compose exec php bash
+# Install PHP library
+docker compose exec php composer install
 
-# Generate app key
-php artisan key:generate
+# Install JS library & build assets (Jalankan di terminal Mac/Host)
+npm install
+npm run build
 
-# Jalankan migration
-php artisan migrate
+```
 
-# (Opsional) Seed data
-php artisan db:seed
+### 4. Setup Laravel & Database
+
+Setelah dependencies terinstall, lakukan inisialisasi aplikasi:
+
+```bash
+# Generate App Key
+docker compose exec php php artisan key:generate
+
+# Jalankan Migration & Seed Data
+docker compose exec php php artisan migrate --seed
+
+# Setup folder permission
+docker compose exec php chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+docker compose exec php chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+
 ```
 
 ### 5. Akses Aplikasi
 
 Buka browser dan akses:
-- **URL**: http://localhost
+
+* **Local**: [http://localhost](https://www.google.com/search?q=http://localhost)
+* **Network (HP/Perangkat lain)**: `http://[IP-MAC-ANDA]`
+
+---
 
 ## Struktur Container
 
-| Service  | Port | Deskripsi          |
-|----------|------|--------------------|
-| nginx    | 80   | Web Server         |
-| php      | 9000 | PHP-FPM            |
-| database | 5432 | PostgreSQL 15 (atau latest) |
+| Service | Port | Deskripsi |
+| --- | --- | --- |
+| **nginx** | 80 | Web Server (Entry Point) |
+| **php** | 9000 | PHP-FPM Engine |
+| **database** | 5432 | PostgreSQL 15 |
+
+---
 
 ## Command Berguna
 
 ```bash
-# Melihat logs
-docker-compose logs -f
+# Menghentikan container
+docker compose down
 
-# Melihat logs service tertentu
-docker-compose logs -f nginx
-docker-compose logs -f php
-docker-compose logs -f database
+# Menjalankan kembali (tanpa build ulang)
+docker compose up -d
 
-# Restart service
-docker-compose restart php
+# Melihat log jika terjadi error
+docker compose logs -f
 
-# Stop container
-docker-compose down
+# Masuk ke terminal container PHP
+docker compose exec php bash
 
-# Hapus semua data (termasuk database)
-docker-compose down -v
-
-# Eksekusi perintah artisan
-docker-compose exec php php artisan list
-
-# Masuk ke container
-docker-compose exec php bash
 ```
 
-## Masalah Umum
+## Masalah Umum & Solusi
 
-### Container tidak bisa start
-```bash
-# Hapus container dan rebuild
-docker-compose down
-docker-compose up -d --build
-```
+**1. Error: `vendor/autoload.php` not found**
+Solusi: Jalankan `docker compose exec php composer install`.
 
-### Database connection error
-Pastikan container database sudah running:
-```bash
-docker-compose ps
-```
+**2. Tampilan Berantakan (CSS Tidak Muncul)**
+Solusi: Jalankan `npm install && npm run build` di terminal host (Mac).
 
-### Permission denied
-```bash
-docker-compose exec php chown -R www-data:www-data /var/www/storage
-docker-compose exec php chmod -R 755 /var/www/storage
-```
+**3. Error Permission di Storage**
+Solusi: Jalankan perintah `chown` dan `chmod` yang ada di Langkah 4.
 
-## Untuk Development
+**4. Database Connection Refused**
+Solusi: Pastikan `DB_HOST=database` di file `.env`, bukan `127.0.0.1`.
 
-Jika ingin development, mount volume secara live:
-
-```bash
-docker-compose up -d
-```
-
-Edit file di laptop client dan perubahan akan langsung terlihat.
-
-## Untuk Production
-
-Untuk deployment di client, bisa menggunakan konfigurasi yang lebih secure:
-- Set `APP_DEBUG=false` di `.env`
-- Gunakan password yang kuat untuk database
-- Setup SSL/HTTPS dengan certbot
+**5. Build Frontend Gagal (Tailwind CSS Error)**
+Solusi: Pastikan file `resources/css/app.css` tidak menggunakan `@apply` yang merujuk ke class Tailwind. Ganti dengan CSS biasa atau gunakan class Tailwind langsung di komponen React/JSX.
 
 ---
 
-**Catatan**: Jika ingin memindahkan ke laptop, cukup copy folder project lengkap (termasuk folder `.git` jika ada) dan jalankan langkah di atas. Pastikan environment variabel database sudah disesuaikan untuk PostgreSQL seperti `DB_CONNECTION=pgsql` dan port `5432`.
+**Catatan**: Untuk memindahkan ke laptop lain, cukup copy seluruh folder project dan ulangi dari Langkah 1.

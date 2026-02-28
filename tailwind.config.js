@@ -9,8 +9,8 @@ const config = {
     './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
     './storage/framework/views/*.php',
     './resources/views/**/*.blade.php',
-    './resources/js/**/*.tsx',
-    './resources/js/components/ui/*.{ts,tsx}',
+    './resources/js/**/*.{js,ts,jsx,tsx}',
+    './resources/css/**/*.css',
   ],
   theme: {
     container: {
@@ -93,4 +93,4 @@ const config = {
   plugins: [forms, animate],
 };
 
-export default config;
+module.exports = config;

@@ -1,5 +1,5 @@
 services:
-  # Web Server (Nginx)
+
   nginx:
     image: nginx:alpine
     ports:
@@ -11,48 +11,39 @@ services:
       - php
     networks:
       - pharmasys-network
+    restart: always
 
-  # PHP-FPM
   php:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Bagian volumes ini yang tadi hilang:
     volumes:
       - .:/var/www
-      - ./storage:/var/www/storage
     depends_on:
       - database
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_DATABASE: live_pharmasys
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
     networks:
       - pharmasys-network
-    environment:
-      - DB_CONNECTION=pgsql
-      - DB_HOST=database
-      - DB_PORT=5432
-      - DB_DATABASE=db_pharmasys
-      - DB_USERNAME=postgres
-      - DB_PASSWORD=postgres
+    restart: always
 
-  # PostgreSQL Database
   database:
-    image: postgres:latest
-    ports:
-      - "5432:5432"
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: live_pharmasys
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=db_pharmasys
     networks:
       - pharmasys-network
-
-  # Composer (untuk menjalankan perintah composer)
-  composer:
-    image: docker.io/composer/composer:2
-    volumes:
-      - .:/var/www
-    working_dir: /var/www
-    command: ["true"]
-    networks:
-      - pharmasys-network
+    restart: always
 
 networks:
   pharmasys-network:
@@ -60,4 +51,3 @@ networks:
 
 volumes:
   postgres_data:
-    driver: local
