@@ -32,21 +32,21 @@ const FeatureShowcase = () => {
         {
             icon: Package,
             title: "Smart Inventory",
-            description: "Pantau stok secara real-time dengan sistem prediksi kebutuhan obat",
+            description: "Pantau stok secara real-time",
             color: "from-emerald-500 to-green-400",
-            highlight: "Hemat 40% waktu pengelolaan stok"
+            highlight: "Hemat waktu pengelolaan stok"
         },
         {
             icon: DollarSign,
             title: "Express Checkout",
-            description: "Proses transaksi dalam hitungan detik dengan scanner terintegrasi",
+            description: "Proses transaksi dalam hitungan detik",
             color: "from-cyan-500 to-blue-400",
             highlight: "Tingkatkan kepuasan pelanggan"
         },
         {
             icon: BarChart4,
             title: "Business Intelligence",
-            description: "Analisis tren penjualan dan prediksi pendapatan dengan AI",
+            description: "Analisis tren penjualan dan prediksi pendapatan",
             color: "from-purple-500 to-indigo-400",
             highlight: "Visualisasi data interaktif"
         },

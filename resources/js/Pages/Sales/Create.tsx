@@ -277,73 +277,84 @@ export default function SalesCreate() {
                     <CardHeader>
                         <CardTitle>{t('cart')}</CardTitle>
                     </CardHeader>
-                    <CardContent>
-                        <form onSubmit={submitSale} className="flex flex-col h-full">
-                            <ScrollArea className="flex-grow mb-4">
-                                {cart.length === 0 ? (
-                                    <p className="text-center text-muted-foreground py-4">{t('cart.empty')}</p>
-                                ) : (
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead className="pr-2">{t('item')}</TableHead>
-                                                <TableHead className="w-20 text-center">{t('qty')}</TableHead>
-                                                <TableHead className="w-28 text-right pr-2">{t('subtotal')}</TableHead>
-                                                <TableHead className="w-12 text-center">{t('del')}</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {cart.map((item: CartItem) => (
-                                                <TableRow key={item.id}>
-                                                    <TableCell className="font-medium text-xs truncate pr-2">{item.nama}</TableCell>
-                                                    <TableCell className="text-center">
-                                                        <Input
-                                                            type="number"
-                                                            min="1"
-                                                            max={item.quantity} // Max is original stock of product
-                                                            value={item.cart_quantity}
-                                                            onChange={(e) => updateCartQuantity(item.id, parseInt(e.target.value) || 1)}
-                                                            className="h-8 w-16 text-center mx-auto"
-                                                        />
-                                                    </TableCell>
-                                                    <TableCell className="text-xs text-right pr-2">Rp {(item.harga * item.cart_quantity).toLocaleString('id-ID')}</TableCell>
-                                                    <TableCell className="text-center">
-                                                        <Button variant="ghost" size="icon" className="h-6 w-6 mx-auto" onClick={() => removeFromCart(item.id)}>
-                                                            <X className="h-4 w-4 text-red-500" />
-                                                        </Button>
-                                                    </TableCell>
+                    <CardContent className="space-y-4">
+                        <form onSubmit={submitSale} className="space-y-4">
+                            {/* Keranjang Produk dengan Scroll Area Tetap */}
+                            <div className="border rounded-lg p-4">
+                                <ScrollArea className="h-[200px]">
+                                    {cart.length === 0 ? (
+                                        <p className="text-center text-muted-foreground py-4">{t('cart.empty')}</p>
+                                    ) : (
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead className="pr-2">{t('item')}</TableHead>
+                                                    <TableHead className="w-20 text-center">{t('qty')}</TableHead>
+                                                    <TableHead className="w-28 text-right pr-2">{t('subtotal')}</TableHead>
+                                                    <TableHead className="w-12 text-center">{t('del')}</TableHead>
                                                 </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                )}
-                            </ScrollArea>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {cart.map((item: CartItem) => (
+                                                    <TableRow key={item.id}>
+                                                        <TableCell className="font-medium text-xs truncate pr-2">{item.nama}</TableCell>
+                                                        <TableCell className="text-center">
+                                                            <Input
+                                                                type="number"
+                                                                min="1"
+                                                                max={item.quantity} // Max is original stock of product
+                                                                value={item.cart_quantity}
+                                                                onChange={(e) => updateCartQuantity(item.id, parseInt(e.target.value) || 1)}
+                                                                className="h-8 w-16 text-center mx-auto"
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell className="text-xs text-right pr-2">Rp {(item.harga * item.cart_quantity).toLocaleString('id-ID')}</TableCell>
+                                                        <TableCell className="text-center">
+                                                            <Button variant="ghost" size="icon" className="h-6 w-6 mx-auto" onClick={() => removeFromCart(item.id)}>
+                                                                <X className="h-4 w-4 text-red-500" />
+                                                            </Button>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    )}
+                                </ScrollArea>
+                            </div>
 
-                            <div className="border-t pt-4 space-y-4 mt-auto">
-                                <div className="flex justify-between font-semibold text-lg">
-                                    <span>{t('total')}</span>
-                                    <span>Rp {totalPrice.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
+                            {/* Total Belanja */}
+                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-lg font-semibold">{t('total')}</span>
+                                    <span className="text-2xl font-bold text-green-600">
+                                        Rp {totalPrice.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}
+                                    </span>
                                 </div>
-                                <div>
-                                    <Label htmlFor="payment_method">{t('Metode Pembayaran')} *</Label>
-                                    <Select 
-                                        value={data.payment_method} 
-                                        onValueChange={(value) => setData('payment_method', value)}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Pilih Metode Pembayaran" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="cash">Cash</SelectItem>
-                                            <SelectItem value="card">Card</SelectItem>
-                                            <SelectItem value="transfer">Transfer</SelectItem>
-                                            <SelectItem value="qris">QRIS</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <InputError message={errors.payment_method as string | undefined} className="mt-2" />
-                                </div>
-                                <div>
-                                    <Label htmlFor="amount_paid">{t('amount.paid')} *</Label>
+                            </div>
+
+                            {/* Form Pembayaran */}
+                            <div>
+                                <Label htmlFor="payment_method">{t('Metode Pembayaran')} *</Label>
+                                <Select 
+                                    value={data.payment_method} 
+                                    onValueChange={(value) => setData('payment_method', value)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Pilih Metode Pembayaran" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="cash">Cash</SelectItem>
+                                        <SelectItem value="card">Card</SelectItem>
+                                        <SelectItem value="transfer">Transfer</SelectItem>
+                                        <SelectItem value="qris">QRIS</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <InputError message={errors.payment_method as string | undefined} className="mt-2" />
+                            </div>
+
+                            <div>
+                                <Label htmlFor="amount_paid">{t('amount.paid')} *</Label>
+                                <div className="space-y-2">
                                     <Input
                                         id="amount_paid"
                                         type="number"
@@ -352,26 +363,51 @@ export default function SalesCreate() {
                                         onChange={(e) => setData('amount_paid', e.target.value)}
                                         min={totalPrice} // Ensure amount paid is at least total price
                                     />
-                                    <InputError message={errors.amount_paid as string | undefined} className="mt-2" />
-                                </div>
-                                {changeAmount !== null && changeAmount >= 0 && (
-                                    <div className="flex justify-between font-semibold text-md text-blue-600">
-                                        <span>{t('change')}</span>
-                                        <span>Rp {changeAmount.toLocaleString('id-ID')}</span>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            type="button"
+                                            variant="secondary"
+                                            onClick={() => setData('amount_paid', data.amount_paid + '0')}
+                                            className="flex-1"
+                                        >
+                                            +0
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            variant="secondary"
+                                            onClick={() => setData('amount_paid', data.amount_paid + '000')}
+                                            className="flex-1"
+                                        >
+                                            +000
+                                        </Button>
                                     </div>
-                                )}
-                                <Button
-                                    type="submit"
-                                    className="w-full bg-green-600 hover:bg-green-700 text-white"
-                                    disabled={processing || cart.length === 0 || parseFloat(data.amount_paid) < totalPrice || !data.payment_method || !data.amount_paid}
-                                >
-                                    {processing ? t('processing') : t('complete.sale')}
-                                </Button>
-                                {/* Display general 'items' error if it exists and is a string from form errors */}
-                                {errors.items && typeof errors.items === 'string' ? (
-                                    <InputError message={errors.items} className="mt-2 text-center" />
-                                ) : null}
+                                </div>
+                                <InputError message={errors.amount_paid as string | undefined} className="mt-2" />
                             </div>
+
+                            {changeAmount !== null && changeAmount >= 0 && (
+                                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-lg font-semibold text-blue-600">{t('change')}</span>
+                                        <span className="text-xl font-bold text-blue-600">
+                                            Rp {changeAmount.toLocaleString('id-ID')}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+
+                            <Button
+                                type="submit"
+                                className="w-full bg-green-600 hover:bg-green-700 text-white py-3 text-lg"
+                                disabled={processing || cart.length === 0 || parseFloat(data.amount_paid) < totalPrice || !data.payment_method || !data.amount_paid}
+                            >
+                                {processing ? t('processing') : t('complete.sale')}
+                            </Button>
+
+                            {/* Display general 'items' error if it exists and is a string from form errors */}
+                            {errors.items && typeof errors.items === 'string' ? (
+                                <InputError message={errors.items} className="mt-2 text-center" />
+                            ) : null}
                         </form>
                     </CardContent>
                 </Card>
